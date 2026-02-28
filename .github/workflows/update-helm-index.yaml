@@ -1,0 +1,64 @@
+name: Update Helm Index
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Download release assets
+        id: download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/charts
+          gh release download "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "*.tgz" \
+            --dir /tmp/charts || true
+
+          TGZ_COUNT=$(find /tmp/charts -name "*.tgz" | wc -l)
+          echo "tgz_count=$TGZ_COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$TGZ_COUNT" -eq 0 ]; then
+            echo "No .tgz assets found in release. Skipping index update."
+          fi
+
+      - name: Regenerate Helm index
+        if: steps.download.outputs.tgz_count != '0'
+        run: |
+          MERGE_FLAG=""
+          if [ -f ./index.yaml ]; then
+            MERGE_FLAG="--merge ./index.yaml"
+          fi
+          helm repo index /tmp/charts \
+            --url "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}" \
+            $MERGE_FLAG
+          cp /tmp/charts/index.yaml ./index.yaml
+
+      - name: Commit updated index.yaml
+        if: steps.download.outputs.tgz_count != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.yaml
+          if git diff --staged --quiet; then
+            echo "No changes to index.yaml"
+          else
+            git commit -m "Update Helm index for release ${{ github.event.release.tag_name }}"
+            git push
+          fi
