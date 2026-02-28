@@ -1,1 +1,1 @@
-Signal24 Helm Charts Repository
+Zyno Consulting Helm Charts Repository
