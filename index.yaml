@@ -21,4 +21,55 @@ entries:
       urls:
         - https://github.com/zyno-io/charts/releases/download/config-controller-1.0.0/config-controller-1.0.0.tgz
       version: 1.0.0
-generated: "2026-03-01T23:16:29.75690065Z"
+  dag:
+    - apiVersion: v2
+      appVersion: 0.0.1
+      created: "2026-03-01T23:18:36.005886299Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: c505ba2415fa3b74091d523f1c4899c83dc12e53f6d21a10246954075237426c
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0/dag-0.1.0.tgz
+      version: 0.1.0
+    - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2026-03-01T23:18:35.54655275Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: f4f481c0dd2427f9dfe6a71064ffa02945efb25848d3cfa9e056a2a61cbe3e22
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0+2/dag-0.1.0+2.tgz
+      version: 0.1.0+2
+    - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2026-03-01T23:18:35.098964852Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: b1fe9f9793d7dc2b610fa72e7bad1143c081f33f3fa0962df8d743a852225424
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0+3/dag-0.1.0+3.tgz
+      version: 0.1.0+3
+    - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2026-03-01T23:18:34.686195238Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: 26b40d117edf4d8d1773c0900774baeddd19f18f08002772ce7a415f837801de
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0+4/dag-0.1.0+4.tgz
+      version: 0.1.0+4
+    - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2026-03-01T23:18:33.769102336Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: 173f7da76ed301a2abdfaa7352a63ffea336da63417f2b44cde708df7fd56c10
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0-6/dag-0.1.0-6.tgz
+      version: 0.1.0-6
+generated: "2026-03-01T23:18:36.005411599Z"
