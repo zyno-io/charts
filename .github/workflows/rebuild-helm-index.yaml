@@ -33,7 +33,7 @@ jobs:
           # URL format in the index:
           #   https://github.com/OWNER/REPO/releases/download/<TAG>/<file>.tgz
           INDEXED_TAGS=$(grep -oE 'releases/download/[^/]+' index.yaml \
-            | awk -F'/' '{print $3}' | sort -u || true)
+            | awk -F'/' '{print $3}' | sed 's/%2B/+/g' | sort -u || true)
 
           # Iterate over every release tag in the repository (newest first).
           while IFS= read -r TAG; do
