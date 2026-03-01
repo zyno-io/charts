@@ -38,6 +38,47 @@ jobs:
             echo "Error: No .tgz assets found in release ${{ github.event.release.tag_name }}. Failing."
             exit 1
           fi
+          echo "Downloaded $TGZ_COUNT .tgz file(s)."
+
+      - name: Normalize chart packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for TGZ_PATH in /tmp/charts/*.tgz; do
+            if helm show chart "$TGZ_PATH" > /dev/null 2>&1; then
+              echo "Chart $(basename "$TGZ_PATH") is properly packaged."
+              continue
+            fi
+            echo "Chart $(basename "$TGZ_PATH") requires normalization (e.g. macOS-packaged archive)."
+            CHART_YAML=$(tar -xzOf "$TGZ_PATH" ./Chart.yaml 2>/dev/null)
+            CHART_NAME=$(echo "$CHART_YAML" | grep "^name:" | awk '{print $2}')
+            CHART_VER=$(echo "$CHART_YAML" | grep "^version:" | awk '{print $2}')
+            if [ -z "$CHART_NAME" ] || [ -z "$CHART_VER" ]; then
+              echo "Error: Cannot determine chart metadata from $(basename "$TGZ_PATH"). The .tgz may be corrupted."
+              exit 1
+            fi
+            echo "Re-packaging: chart=$CHART_NAME version=$CHART_VER"
+            TMPDIR=$(mktemp -d)
+            CHART_DIR="$TMPDIR/$CHART_NAME"
+            mkdir "$CHART_DIR"
+            tar -xzf "$TGZ_PATH" \
+              --exclude='._*' \
+              --exclude='.DS_Store' \
+              --strip-components=1 \
+              -C "$CHART_DIR"
+            NEW_TGZ="$TMPDIR/${CHART_NAME}-${CHART_VER}.tgz"
+            tar -czf "$NEW_TGZ" -C "$TMPDIR" "$CHART_NAME"
+            NORMALIZED_PATH="/tmp/charts/${CHART_NAME}-${CHART_VER}.tgz"
+            mv "$NEW_TGZ" "$NORMALIZED_PATH"
+            # Remove original only if it had a different name (mv already overwrites same-path files)
+            [ "$TGZ_PATH" != "$NORMALIZED_PATH" ] && rm -f "$TGZ_PATH"
+            gh release upload "${{ github.event.release.tag_name }}" \
+              "$NORMALIZED_PATH" \
+              --repo "${{ github.repository }}" \
+              --clobber
+            echo "Re-packaged and re-uploaded $(basename "$NORMALIZED_PATH") to release."
+            rm -rf "$TMPDIR"
+          done
 
       - name: Regenerate Helm index
         run: |
@@ -52,19 +93,26 @@ jobs:
 
       - name: Verify new version in index.yaml
         run: |
-          TAG="${{ github.event.release.tag_name }}"
-          VERSION=$(echo "${TAG#v}" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+[^ ]*' | head -1)
-          if [ -z "$VERSION" ]; then
-            echo "Error: Could not extract a valid version from tag '$TAG'."
+          FAILED=0
+          for TGZ in /tmp/charts/*.tgz; do
+            CHART_VERSION=$(helm show chart "$TGZ" 2>/dev/null | grep "^version:" | awk '{print $2}')
+            if [ -z "$CHART_VERSION" ]; then
+              echo "Error: Could not read chart version from $(basename "$TGZ") after normalization."
+              FAILED=1
+              continue
+            fi
+            echo "Checking for chart version: $CHART_VERSION"
+            VERSION_ESCAPED=$(printf '%s' "$CHART_VERSION" | sed 's/\./\\./g')
+            if ! grep -qE "^[[:space:]]+version: ${VERSION_ESCAPED}$" ./index.yaml; then
+              echo "Error: Version $CHART_VERSION from $(basename "$TGZ") not found in index.yaml after regeneration."
+              FAILED=1
+            else
+              echo "Version $CHART_VERSION found in index.yaml."
+            fi
+          done
+          if [ "$FAILED" -ne 0 ]; then
             exit 1
           fi
-          echo "Checking for version: $VERSION"
-          VERSION_ESCAPED=$(printf '%s' "$VERSION" | sed 's/\./\\./g')
-          if ! grep -qE "^[[:space:]]+version: ${VERSION_ESCAPED}$" ./index.yaml; then
-            echo "Error: Version $VERSION not found in index.yaml. The chart package metadata may not match the release tag."
-            exit 1
-          fi
-          echo "Version $VERSION found in index.yaml."
 
       - name: Commit updated index.yaml
         run: |
