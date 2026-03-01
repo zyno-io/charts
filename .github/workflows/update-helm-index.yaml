@@ -50,7 +50,7 @@ jobs:
               continue
             fi
             echo "Chart $(basename "$TGZ_PATH") requires normalization (e.g. macOS-packaged archive)."
-            CHART_YAML=$(tar -xzOf "$TGZ_PATH" ./Chart.yaml 2>/dev/null)
+            CHART_YAML=$(tar -xzOf "$TGZ_PATH" ./Chart.yaml 2>/dev/null) || true
             CHART_NAME=$(echo "$CHART_YAML" | grep "^name:" | awk '{print $2}')
             CHART_VER=$(echo "$CHART_YAML" | grep "^version:" | awk '{print $2}')
             if [ -z "$CHART_NAME" ] || [ -z "$CHART_VER" ]; then
@@ -58,16 +58,16 @@ jobs:
               exit 1
             fi
             echo "Re-packaging: chart=$CHART_NAME version=$CHART_VER"
-            TMPDIR=$(mktemp -d)
-            CHART_DIR="$TMPDIR/$CHART_NAME"
+            NORM_TMPDIR=$(mktemp -d)
+            CHART_DIR="$NORM_TMPDIR/$CHART_NAME"
             mkdir "$CHART_DIR"
             tar -xzf "$TGZ_PATH" \
               --exclude='._*' \
               --exclude='.DS_Store' \
               --strip-components=1 \
               -C "$CHART_DIR"
-            NEW_TGZ="$TMPDIR/${CHART_NAME}-${CHART_VER}.tgz"
-            tar -czf "$NEW_TGZ" -C "$TMPDIR" "$CHART_NAME"
+            NEW_TGZ="$NORM_TMPDIR/${CHART_NAME}-${CHART_VER}.tgz"
+            tar -czf "$NEW_TGZ" -C "$NORM_TMPDIR" "$CHART_NAME"
             NORMALIZED_PATH="/tmp/charts/${CHART_NAME}-${CHART_VER}.tgz"
             mv "$NEW_TGZ" "$NORMALIZED_PATH"
             # Remove original only if it had a different name (mv already overwrites same-path files)
@@ -77,7 +77,7 @@ jobs:
               --repo "${{ github.repository }}" \
               --clobber
             echo "Re-packaged and re-uploaded $(basename "$NORMALIZED_PATH") to release."
-            rm -rf "$TMPDIR"
+            rm -rf "$NORM_TMPDIR"
           done
 
       - name: Regenerate Helm index
