@@ -80,19 +80,27 @@ jobs:
             rm -rf "$NORM_TMPDIR"
           done
 
-      - name: Regenerate Helm index
-        run: |
-          MERGE_FLAG=""
-          if [ -f ./index.yaml ]; then
-            MERGE_FLAG="--merge ./index.yaml"
-          fi
-          helm repo index /tmp/charts \
-            --url "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}" \
-            $MERGE_FLAG
-          cp /tmp/charts/index.yaml ./index.yaml
-
       - name: Install yq
         uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51 # v4.52.4
+
+      - name: Regenerate Helm index
+        run: |
+          helm repo index /tmp/charts \
+            --url "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}"
+          if [ -f ./index.yaml ]; then
+            OLD_INDEX_PATH="./index.yaml" NEW_INDEX_PATH="/tmp/charts/index.yaml" yq -n '
+              (load(strenv(OLD_INDEX_PATH))) as $old |
+              (load(strenv(NEW_INDEX_PATH))) as $new |
+              {"apiVersion":"v1","entries":{},"generated":""} |
+              .apiVersion = ($new.apiVersion // $old.apiVersion // .apiVersion) |
+              .generated = ($new.generated // $old.generated // .generated) |
+              .entries = (($old.entries // {}) *+ ($new.entries // {})) |
+              .entries |= with_entries(.value |= unique_by(.urls[0]))
+            ' > /tmp/charts/index.merged.yaml
+            cp /tmp/charts/index.merged.yaml ./index.yaml
+          else
+            cp /tmp/charts/index.yaml ./index.yaml
+          fi
 
       - name: Verify new version in index.yaml
         run: |
