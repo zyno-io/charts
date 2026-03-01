@@ -102,10 +102,8 @@ jobs:
                 (load(strenv(OLD_INDEX_PATH))) as $old |
                 (load(strenv(NEW_INDEX_PATH))) as $new |
                 {"apiVersion":"v1","entries":{},"generated":""} |
-                .apiVersion = ($old.apiVersion // .apiVersion) |
-                .apiVersion = ($new.apiVersion // .apiVersion) |
-                .generated = ($old.generated // .generated) |
-                .generated = ($new.generated // .generated) |
+                .apiVersion = ($new.apiVersion // $old.apiVersion // .apiVersion) |
+                .generated = ($new.generated // $old.generated // .generated) |
                 .entries = (($old.entries // {}) *+ ($new.entries // {})) |
                 .entries |= with_entries(.value |= unique_by(.urls[0]))
               ' > "$RELEASE_DIR/index.merged.yaml"
