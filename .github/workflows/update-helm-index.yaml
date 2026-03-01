@@ -91,19 +91,26 @@ jobs:
             $MERGE_FLAG
           cp /tmp/charts/index.yaml ./index.yaml
 
+      - name: Install yq
+        uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51 # v4.52.4
+
       - name: Verify new version in index.yaml
         run: |
           FAILED=0
           for TGZ in /tmp/charts/*.tgz; do
-            CHART_VERSION=$(helm show chart "$TGZ" 2>/dev/null | grep "^version:" | awk '{print $2}')
-            if [ -z "$CHART_VERSION" ]; then
-              echo "Error: Could not read chart version from $(basename "$TGZ") after normalization."
+            CHART_INFO=$(helm show chart "$TGZ" 2>/dev/null)
+            CHART_NAME=$(echo "$CHART_INFO" | grep "^name:" | awk '{print $2}')
+            CHART_VERSION=$(echo "$CHART_INFO" | grep "^version:" | awk '{print $2}')
+            if [ -z "$CHART_NAME" ] || [ -z "$CHART_VERSION" ]; then
+              echo "Error: Could not read chart metadata from $(basename "$TGZ") after normalization."
               FAILED=1
               continue
             fi
-            echo "Checking for chart version: $CHART_VERSION"
-            VERSION_ESCAPED=$(printf '%s' "$CHART_VERSION" | sed 's/[.+]/\\&/g')
-            if ! grep -qE "^[[:space:]]+version: ${VERSION_ESCAPED}$" ./index.yaml; then
+            echo "Checking for chart=$CHART_NAME version=$CHART_VERSION"
+            FOUND=$(CHART_NAME="$CHART_NAME" CHART_VERSION="$CHART_VERSION" \
+              yq '.entries[strenv(CHART_NAME)][] | select(.version == strenv(CHART_VERSION)) | .version' \
+              ./index.yaml)
+            if [ -z "$FOUND" ]; then
               echo "Error: Version $CHART_VERSION from $(basename "$TGZ") not found in index.yaml after regeneration."
               FAILED=1
             else
