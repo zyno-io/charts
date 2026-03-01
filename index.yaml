@@ -10,6 +10,6 @@ entries:
     name: config-controller
     type: application
     urls:
-    - https://github.com/signal24/charts/releases/download/config-controller-1.0.0/config-controller-1.0.0.tgz
+    - https://github.com/zyno-io/charts/releases/download/config-controller-1.0.0/config-controller-1.0.0.tgz
     version: 1.0.0
 generated: "2024-03-21T02:02:13.309631-04:00"
