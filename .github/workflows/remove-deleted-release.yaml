@@ -1,0 +1,55 @@
+name: Remove Deleted Release from Helm Index
+
+on:
+  release:
+    types: [deleted]
+
+permissions:
+  contents: write
+
+jobs:
+  remove-from-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install yq
+        uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51 # v4.52.4
+
+      - name: Remove release entries from index.yaml
+        run: |
+          if [ ! -f ./index.yaml ]; then
+            echo "No index.yaml found — nothing to do."
+            exit 0
+          fi
+
+          TAG="${{ github.event.release.tag_name }}"
+          URL_PREFIX="https://github.com/${{ github.repository }}/releases/download/${TAG}/"
+          # Also handle URL-encoded + (%2B) in tag names with build metadata.
+          URL_PREFIX_ENCODED=$(echo "$URL_PREFIX" | sed 's/+/%2B/g')
+
+          echo "Removing entries with URL prefix: $URL_PREFIX"
+
+          URL_PREFIX="$URL_PREFIX" URL_PREFIX_ENCODED="$URL_PREFIX_ENCODED" yq -i '
+            .entries |= with_entries(
+              .value |= map(select(
+                ((.urls[0] // "") | (startswith(strenv(URL_PREFIX)) or startswith(strenv(URL_PREFIX_ENCODED)))) | not
+              ))
+            ) |
+            .entries |= with_entries(select(.value | length > 0))
+          ' ./index.yaml
+
+      - name: Commit updated index.yaml
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.yaml
+          if git diff --staged --quiet; then
+            echo "No changes to index.yaml — release may not have been indexed."
+          else
+            git commit -m "Remove deleted release ${{ github.event.release.tag_name }} from Helm index"
+            git push
+          fi
