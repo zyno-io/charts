@@ -102,7 +102,7 @@ jobs:
               continue
             fi
             echo "Checking for chart version: $CHART_VERSION"
-            VERSION_ESCAPED=$(printf '%s' "$CHART_VERSION" | sed 's/\./\\./g')
+            VERSION_ESCAPED=$(printf '%s' "$CHART_VERSION" | sed 's/[.+]/\\&/g')
             if ! grep -qE "^[[:space:]]+version: ${VERSION_ESCAPED}$" ./index.yaml; then
               echo "Error: Version $CHART_VERSION from $(basename "$TGZ") not found in index.yaml after regeneration."
               FAILED=1
