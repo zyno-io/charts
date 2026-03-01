@@ -95,7 +95,7 @@ jobs:
               .apiVersion = ($new.apiVersion // $old.apiVersion // .apiVersion) |
               .generated = ($new.generated // $old.generated // .generated) |
               .entries = (($old.entries // {}) *+ ($new.entries // {})) |
-              .entries |= with_entries(.value |= unique_by(.urls[0]))
+              .entries |= with_entries(.value |= unique_by(((.urls // [])[0] // ((.name // "") + ":" + (.version // "")))))
             ' > /tmp/charts/index.merged.yaml
             cp /tmp/charts/index.merged.yaml ./index.yaml
           else
