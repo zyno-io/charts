@@ -25,6 +25,9 @@ jobs:
         with:
           version: v3.14.4
 
+      - name: Install yq
+        uses: mikefarah/yq@5a7e72a743649b1b3a47d1a1d8214f3453173c51 # v4.52.4
+
       - name: Add missing releases to index.yaml
         env:
           GH_TOKEN: ${{ github.token }}
@@ -89,11 +92,28 @@ jobs:
               rm -rf "$NORM_TMPDIR"
             done
 
-            # Merge this release's charts into index.yaml using the correct per-release URL.
+            # Build a per-release index with the correct download URL.
             helm repo index "$RELEASE_DIR" \
-              --url "https://github.com/${{ github.repository }}/releases/download/$TAG" \
-              --merge ./index.yaml
-            cp "$RELEASE_DIR/index.yaml" ./index.yaml
+              --url "https://github.com/${{ github.repository }}/releases/download/$TAG"
+
+            # Merge new entries into index.yaml using yq instead of
+            # helm's --merge flag, which uses SemVer comparison and treats
+            # versions differing only in build metadata (e.g. 0.1.0+3 vs
+            # 0.1.0+4) as identical, silently dropping entries.
+            if [ -f ./index.yaml ]; then
+              OLD_INDEX_PATH="./index.yaml" NEW_INDEX_PATH="$RELEASE_DIR/index.yaml" yq -n '
+                (load(strenv(OLD_INDEX_PATH))) as $old |
+                (load(strenv(NEW_INDEX_PATH))) as $new |
+                {"apiVersion": "v1", "entries": {}, "generated": ""} |
+                .apiVersion = ($new.apiVersion // $old.apiVersion // .apiVersion) |
+                .generated = ($new.generated // $old.generated // .generated) |
+                .entries = (($old.entries // {}) *+ ($new.entries // {})) |
+                .entries |= with_entries(.value |= (unique_by(.version) | sort_by(.created) | reverse))
+              ' > "$RELEASE_DIR/index.merged.yaml"
+              mv "$RELEASE_DIR/index.merged.yaml" ./index.yaml
+            else
+              cp "$RELEASE_DIR/index.yaml" ./index.yaml
+            fi
 
             rm -rf "$RELEASE_DIR"
             echo "  Added $TAG to index.yaml."
