@@ -23,6 +23,16 @@ entries:
       version: 1.0.0
   dag:
     - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2026-03-01T23:40:11.489436063Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: cb28a28ee7e30504bd43354d70ac74e9303f590a4dbdbb7eda8e9f9fc6e3fc15
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0-7/dag-0.1.0-7.tgz
+      version: 0.1.0-7
+    - apiVersion: v2
       appVersion: 0.0.1
       created: "2026-03-01T23:18:36.005886299Z"
       description: A Helm chart for DAG — deployment automation with GitOps
@@ -72,4 +82,4 @@ entries:
       urls:
         - https://github.com/zyno-io/charts/releases/download/dag-0.1.0-6/dag-0.1.0-6.tgz
       version: 0.1.0-6
-generated: "2026-03-01T23:18:36.005411599Z"
+generated: "2026-03-01T23:40:11.488955549Z"
