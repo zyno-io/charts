@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   config-controller:
   - apiVersion: v2
+    appVersion: 1.0.1
+    created: "2026-03-01T06:45:36.51725774Z"
+    description: Simple Kubernetes controller to create key/value Secrets from encrypted
+      .env files stored in ConfigMaps
+    digest: 0684846312170381c163671330e0415eba512f0953e1020fed391e12b8bf5e34
+    name: config-controller
+    type: application
+    urls:
+    - https://github.com/zyno-io/charts/releases/download/config-controller-1.0.1/config-controller-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
     appVersion: 1.0.0
     created: "2024-03-21T02:02:13.309623-04:00"
     description: Simple Kubernetes controller to create key/value Secrets from encrypted
@@ -12,4 +23,4 @@ entries:
     urls:
     - https://github.com/zyno-io/charts/releases/download/config-controller-1.0.0/config-controller-1.0.0.tgz
     version: 1.0.0
-generated: "2026-03-01T00:17:06.673249598Z"
+generated: "2026-03-01T06:45:36.516919679Z"
