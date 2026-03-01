@@ -2,7 +2,7 @@ name: Update Helm Index
 
 on:
   release:
-    types: [published, created]
+    types: [published]
 
 permissions:
   contents: write
@@ -35,11 +35,11 @@ jobs:
           TGZ_COUNT=$(find /tmp/charts -name "*.tgz" | wc -l)
           echo "tgz_count=$TGZ_COUNT" >> "$GITHUB_OUTPUT"
           if [ "$TGZ_COUNT" -eq 0 ]; then
-            echo "No .tgz assets found in release. Skipping index update."
+            echo "Error: No .tgz assets found in release ${{ github.event.release.tag_name }}. Failing."
+            exit 1
           fi
 
       - name: Regenerate Helm index
-        if: steps.download.outputs.tgz_count != '0'
         run: |
           MERGE_FLAG=""
           if [ -f ./index.yaml ]; then
@@ -50,8 +50,23 @@ jobs:
             $MERGE_FLAG
           cp /tmp/charts/index.yaml ./index.yaml
 
+      - name: Verify new version in index.yaml
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION=$(echo "${TAG#v}" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+[^ ]*' | head -1)
+          if [ -z "$VERSION" ]; then
+            echo "Error: Could not extract a valid version from tag '$TAG'."
+            exit 1
+          fi
+          echo "Checking for version: $VERSION"
+          VERSION_ESCAPED=$(printf '%s' "$VERSION" | sed 's/\./\\./g')
+          if ! grep -qE "^[[:space:]]+version: ${VERSION_ESCAPED}$" ./index.yaml; then
+            echo "Error: Version $VERSION not found in index.yaml. The chart package metadata may not match the release tag."
+            exit 1
+          fi
+          echo "Version $VERSION found in index.yaml."
+
       - name: Commit updated index.yaml
-        if: steps.download.outputs.tgz_count != '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
