@@ -96,6 +96,14 @@ jobs:
             helm repo index "$RELEASE_DIR" \
               --url "https://github.com/${{ github.repository }}/releases/download/$TAG"
 
+            # Helm sets "created" from the .tgz mtime (i.e. download time).
+            # Overwrite with the actual release timestamp.
+            RELEASE_CREATED=$(gh release view "$TAG" \
+              --repo "${{ github.repository }}" \
+              --json createdAt --jq '.createdAt')
+            RELEASE_CREATED="$RELEASE_CREATED" \
+              yq -i '.entries[][].created = strenv(RELEASE_CREATED)' "$RELEASE_DIR/index.yaml"
+
             # Merge new entries into index.yaml using yq instead of
             # helm's --merge flag, which uses SemVer comparison and treats
             # versions differing only in build metadata (e.g. 0.1.0+3 vs

@@ -88,6 +88,11 @@ jobs:
           helm repo index /tmp/charts \
             --url "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}"
 
+          # Helm sets "created" from the .tgz mtime (i.e. download time).
+          # Overwrite with the actual release timestamp.
+          RELEASE_CREATED="${{ github.event.release.created_at }}" \
+            yq -i '.entries[][].created = strenv(RELEASE_CREATED)' /tmp/charts/index.yaml
+
           if [ -f ./index.yaml ]; then
             # Merge new entries into existing index using yq instead of
             # helm's --merge flag, which uses SemVer comparison and treats
