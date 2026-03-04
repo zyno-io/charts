@@ -21,4 +21,15 @@ entries:
       urls:
         - https://github.com/zyno-io/charts/releases/download/config-controller-1.0.0/config-controller-1.0.0.tgz
       version: 1.0.0
-generated: "2026-03-01T23:46:27.070433339Z"
+  dag:
+    - apiVersion: v2
+      appVersion: 0.1.0
+      created: "2026-03-01T23:55:58Z"
+      description: A Helm chart for DAG — deployment automation with GitOps
+      digest: 7d1050fb00dcf0f28225c5d28c602899e4d0031d1e41b29ebba7126a3973a26d
+      name: dag
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/dag-0.1.0/dag-0.1.0.tgz
+      version: 0.1.0
+generated: "2026-03-04T04:41:37.016769186Z"
