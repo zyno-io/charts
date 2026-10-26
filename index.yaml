@@ -199,6 +199,23 @@ entries:
   redis:
     - apiVersion: v2
       appVersion: 8.8.3
+      created: "2026-10-26T18:22:09Z"
+      description: Three-node Redis/Sentinel with unattended recovery and synchronized rolling handoff
+      digest: 1904510f947571ffe3c0dc066319f7eebba47ce77d1ff91f3f7c7282601738c2
+      home: https://github.com/zyno-io/redis-ha
+      keywords:
+        - redis
+        - sentinel
+        - high-availability
+      name: redis
+      sources:
+        - https://github.com/zyno-io/redis-ha
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/redis-0.2.1/redis-0.2.1.tgz
+      version: 0.2.1
+    - apiVersion: v2
+      appVersion: 8.8.3
       created: "2026-10-08T06:48:04Z"
       description: Three-node Redis/Sentinel with unattended recovery and synchronized rolling handoff
       digest: 2361f357333d949d57f0938750c928878fb426aa4929a1b167a76232aef88b48
@@ -214,4 +231,4 @@ entries:
       urls:
         - https://github.com/zyno-io/charts/releases/download/redis-0.2.0/redis-0.2.0.tgz
       version: 0.2.0
-generated: "2026-10-26T18:22:07.702280208Z"
+generated: "2026-10-26T18:46:20.210575048Z"
