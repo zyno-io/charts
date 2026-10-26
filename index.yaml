@@ -196,4 +196,22 @@ entries:
       urls:
         - https://github.com/zyno-io/charts/releases/download/hemlig-controller-0.1.0/hemlig-controller-0.1.0.tgz
       version: 0.1.0
-generated: "2026-10-08T06:48:03.62836316Z"
+  redis:
+    - apiVersion: v2
+      appVersion: 8.8.3
+      created: "2026-10-08T06:48:04Z"
+      description: Three-node Redis/Sentinel with unattended recovery and synchronized rolling handoff
+      digest: 2361f357333d949d57f0938750c928878fb426aa4929a1b167a76232aef88b48
+      home: https://github.com/zyno-io/redis-ha
+      keywords:
+        - redis
+        - sentinel
+        - high-availability
+      name: redis
+      sources:
+        - https://github.com/zyno-io/redis-ha
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/redis-0.2.0/redis-0.2.0.tgz
+      version: 0.2.0
+generated: "2026-10-26T18:22:07.702280208Z"
