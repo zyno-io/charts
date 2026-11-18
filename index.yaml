@@ -136,6 +136,31 @@ entries:
     - annotations:
         artifacthub.io/license: MIT
       apiVersion: v2
+      appVersion: v0.3.4
+      created: "2026-11-18T04:02:26Z"
+      description: Kubernetes import and export controller for Hemlig secrets
+      digest: 980c89b79efdd1244a96906c840a78569b6c681fdda83132428141ff699a45e8
+      home: https://github.com/zyno-io/hemlig
+      keywords:
+        - secrets
+        - kubernetes
+        - hemlig
+        - controller
+      kubeVersion: '>=1.28.0-0'
+      maintainers:
+        - email: oss@zyno.io
+          name: Zyno Consulting
+          url: https://github.com/zyno-io
+      name: hemlig-controller
+      sources:
+        - https://github.com/zyno-io/hemlig
+      type: application
+      urls:
+        - https://github.com/zyno-io/charts/releases/download/hemlig-controller-0.3.4/hemlig-controller-0.3.4.tgz
+      version: 0.3.4
+    - annotations:
+        artifacthub.io/license: MIT
+      apiVersion: v2
       appVersion: v0.3.3
       created: "2026-11-17T23:35:11Z"
       description: Kubernetes import and export controller for Hemlig secrets
@@ -392,4 +417,4 @@ entries:
       urls:
         - https://github.com/zyno-io/charts/releases/download/redis-0.2.0/redis-0.2.0.tgz
       version: 0.2.0
-generated: "2026-11-18T04:02:25.99483034Z"
+generated: "2026-11-18T05:04:45.87801085Z"
